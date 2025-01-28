@@ -7,6 +7,9 @@ from langchain_community.vectorstores import Chroma
 from langchain.chains import RetrievalQA
 
 def load_and_process_data(file_path: str):
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"CSV file not found at: {file_path}")
+        
     loader = CSVLoader(file_path)  # Changed to CSVLoader
     documents = loader.load()
     

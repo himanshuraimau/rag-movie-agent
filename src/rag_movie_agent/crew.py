@@ -1,62 +1,86 @@
+"""Module for setting up RAG movie recommendation crew and agents."""
+
+import os
+from typing import Any
+
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
+from crewai_tools import EXASearchTool
 
-# If you want to run a snippet of code before or after the crew starts, 
-# you can use the @before_kickoff and @after_kickoff decorators
-# https://docs.crewai.com/concepts/crews#example-crew-class-with-decorators
+from rag_movie_agent.tools.chroma_vector_search_tool import ChromaVectorSearchTool
+
+# Initialize tools
+chroma_vector_search_tool = ChromaVectorSearchTool(
+    collection_name="netflix_data",
+    limit=10,
+)
+
+exa_search_tool = EXASearchTool(
+    api_key=os.environ.get("EXA_API_KEY"),
+)
 
 @CrewBase
-class RagMovieAgent():
-	"""RagMovieAgent crew"""
+class MovieRecommendationCrew:
+    """Crew for movie recommendations using RAG."""
 
-	# Learn more about YAML configuration files here:
-	# Agents: https://docs.crewai.com/concepts/agents#yaml-configuration-recommended
-	# Tasks: https://docs.crewai.com/concepts/tasks#yaml-configuration-recommended
-	agents_config = 'config/agents.yaml'
-	tasks_config = 'config/tasks.yaml'
+    agents_config = "config/agents.yaml"
+    tasks_config = "config/tasks.yaml"
 
-	# If you would like to add tools to your agents, you can learn more about it here:
-	# https://docs.crewai.com/concepts/agents#agent-tools
-	@agent
-	def researcher(self) -> Agent:
-		return Agent(
-			config=self.agents_config['researcher'],
-			verbose=True
-		)
+    @agent
+    def rag_agent(self) -> Agent:
+        """Create agent for RAG retrieval."""
+        return Agent(
+            config=self.agents_config["rag_agent"],
+            verbose=True,
+            tools=[chroma_vector_search_tool],
+        )
 
-	@agent
-	def reporting_analyst(self) -> Agent:
-		return Agent(
-			config=self.agents_config['reporting_analyst'],
-			verbose=True
-		)
+    @agent 
+    def expand_details_agent(self) -> Agent:
+        """Create agent for expanding movie details."""
+        return Agent(
+            config=self.agents_config["expand_details_agent"],
+            verbose=True, 
+            tools=[exa_search_tool],
+        )
 
-	# To learn more about structured task outputs, 
-	# task dependencies, and task callbacks, check out the documentation:
-	# https://docs.crewai.com/concepts/tasks#overview-of-a-task
-	@task
-	def research_task(self) -> Task:
-		return Task(
-			config=self.tasks_config['research_task'],
-		)
+    @agent
+    def report_agent(self) -> Agent:
+        """Create agent for generating final report."""
+        return Agent(
+            config=self.agents_config["report_agent"],
+            verbose=True
+        )
 
-	@task
-	def reporting_task(self) -> Task:
-		return Task(
-			config=self.tasks_config['reporting_task'],
-			output_file='report.md'
-		)
+    @task
+    def rag_task(self) -> Task:
+        """Define RAG retrieval task."""
+        return Task(
+            config=self.tasks_config["rag_task"],
+        )
 
-	@crew
-	def crew(self) -> Crew:
-		"""Creates the RagMovieAgent crew"""
-		# To learn how to add knowledge sources to your crew, check out the documentation:
-		# https://docs.crewai.com/concepts/knowledge#what-is-knowledge
+    @task 
+    def expand_details_task(self) -> Task:
+        """Define details expansion task."""
+        return Task(
+            config=self.tasks_config["expand_details_task"],
+            output_file="report.md"
+        )
 
-		return Crew(
-			agents=self.agents, # Automatically created by the @agent decorator
-			tasks=self.tasks, # Automatically created by the @task decorator
-			process=Process.sequential,
-			verbose=True,
-			# process=Process.hierarchical, # In case you wanna use that instead https://docs.crewai.com/how-to/Hierarchical/
-		)
+    @task
+    def report_task(self) -> Task:
+        """Define report generation task."""
+        return Task(
+            config=self.tasks_config["report_task"],
+            output_file="report.md"
+        )
+
+    @crew
+    def crew(self) -> Crew:
+        """Create the movie recommendation crew."""
+        return Crew(
+            agents=self.agents,
+            tasks=self.tasks,
+            process=Process.sequential,
+            verbose=True,
+        )
