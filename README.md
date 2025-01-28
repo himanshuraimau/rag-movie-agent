@@ -1,54 +1,82 @@
-# RagMovieAgent Crew
+# Netflix Movie Recommendation RAG Agent
 
-Welcome to the RagMovieAgent Crew project, powered by [crewAI](https://crewai.com). This template is designed to help you set up a multi-agent AI system with ease, leveraging the powerful and flexible framework provided by crewAI. Our goal is to enable your agents to collaborate effectively on complex tasks, maximizing their collective intelligence and capabilities.
+A sophisticated movie recommendation system powered by [crewAI](https://crewai.com) that uses RAG (Retrieval Augmented Generation) to provide personalized movie and TV show recommendations from Netflix's catalog. The system combines vector search capabilities with AI agents to deliver detailed, context-aware recommendations.
+
+## Features
+
+- RAG-based movie and show recommendations
+- Detailed content analysis and comparison
+- Multi-agent system for comprehensive recommendations
+- Vector search through Netflix catalog
+- External web search for expanded details
+- Structured report generation
+
+## Prerequisites
+
+- Python >=3.10 <3.13
+- Ollama installed locally with llama model
+- EXA Search API key (for expanded content details)
 
 ## Installation
 
-Ensure you have Python >=3.10 <3.13 installed on your system. This project uses [UV](https://docs.astral.sh/uv/) for dependency management and package handling, offering a seamless setup and execution experience.
-
-First, if you haven't already, install uv:
-
+1. Clone the repository:
 ```bash
-pip install uv
+git clone <repository-url>
+cd rag-movie-agent
 ```
 
-Next, navigate to your project directory and install the dependencies:
-
-(Optional) Lock the dependencies and install them by using the CLI command:
+2. Install dependencies using pip:
 ```bash
-crewai install
-```
-### Customizing
-
-**Add your `OPENAI_API_KEY` into the `.env` file**
-
-- Modify `src/rag_movie_agent/config/agents.yaml` to define your agents
-- Modify `src/rag_movie_agent/config/tasks.yaml` to define your tasks
-- Modify `src/rag_movie_agent/crew.py` to add your own logic, tools and specific args
-- Modify `src/rag_movie_agent/main.py` to add custom inputs for your agents and tasks
-
-## Running the Project
-
-To kickstart your crew of AI agents and begin task execution, run this from the root folder of your project:
-
-```bash
-$ crewai run
+pip install -r requirements.txt
 ```
 
-This command initializes the rag-movie-agent Crew, assembling the agents and assigning them tasks as defined in your configuration.
+3. Set up environment variables in `.env`:
+```properties
+MODEL=ollama/llama3.2
+API_BASE=http://localhost:11434
+EXA_API_KEY="your-exa-api-key"
+```
 
-This example, unmodified, will run the create a `report.md` file with the output of a research on LLMs in the root folder.
+4. Prepare your data:
+- Place your Netflix dataset in `knowledge/netflix_titles.csv`
+- The system will automatically create a vector store in `chroma_db/`
 
-## Understanding Your Crew
+## Usage
 
-The rag-movie-agent Crew is composed of multiple AI agents, each with unique roles, goals, and tools. These agents collaborate on a series of tasks, defined in `config/tasks.yaml`, leveraging their collective skills to achieve complex objectives. The `config/agents.yaml` file outlines the capabilities and configurations of each agent in your crew.
+Run the recommendation system:
+
+```bash
+python -m rag_movie_agent.main
+```
+
+The system will:
+1. Load and process the Netflix dataset
+2. Create vector embeddings using Ollama
+3. Set up the recommendation agents
+4. Generate detailed recommendations based on your query
+5. Output a structured report with recommendations
+
+## System Components
+
+- **RAG Agent**: Handles vector search and initial recommendations
+- **Expand Details Agent**: Enriches recommendations with external data
+- **Report Agent**: Generates the final structured report
+- **Vector Store**: ChromaDB for efficient content retrieval
+- **Tools**: ChromaVectorSearchTool and EXASearchTool for data access
+
+## Configuration
+
+- Modify `config/agents.yaml` to adjust agent behaviors
+- Update `config/tasks.yaml` to customize the recommendation workflow
+- Adjust vector search parameters in the tools
 
 ## Support
 
-For support, questions, or feedback regarding the RagMovieAgent Crew or crewAI.
-- Visit our [documentation](https://docs.crewai.com)
-- Reach out to us through our [GitHub repository](https://github.com/joaomdmoura/crewai)
-- [Join our Discord](https://discord.com/invite/X4JWnZnxPb)
-- [Chat with our docs](https://chatg.pt/DWjSBZn)
+For issues or questions:
+- [Create an issue](https://github.com/yourusername/rag-movie-agent/issues)
+- [Join crewAI Discord](https://discord.com/invite/X4JWnZnxPb)
+- [Documentation](https://docs.crewai.com)
 
-Let's create wonders together with the power and simplicity of crewAI.
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
